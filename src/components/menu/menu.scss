@@ -1,0 +1,30 @@
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+.ionic-logo {
+  display: block;
+  margin: 15px auto;
+  width: 96px;
+  height: 96px;
+}
+
+.item-body > p {
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.glow-animation {
+  text-shadow: 0 0 0px #fff;
+  transition: all 0.5s;
+}
+
+.glow-animation:hover, .glow-animation.active {
+  text-shadow: 0 0 10px #f9ff4c;
+}

@@ -1,0 +1,12 @@
+{
+  "MENU_TRACKER": "Tracker",
+  "MENU_ALBUM": "Album",
+  "MENU_MUSIC": "Music",
+  "MENU_ABOUT": "About",
+  "MENU_FEED": "Feed",
+  "MENU_SHARE": "Share",
+  "MENU_FRIENDS": "Friends",
+  "MENU_PROFILE": "Profile",
+  "MENU_LOGOUT": "Logout",
+  "MENU_REVOKE_PERMISSIONS": "Revoke Permissions"
+}

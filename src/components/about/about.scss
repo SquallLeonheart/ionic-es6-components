@@ -1,0 +1,79 @@
+
+section {
+  display: block;
+}
+
+.containerOuter {
+  height: 350px;
+  width: 100%;
+  overflow: hidden;
+}
+
+#aboutMeIntro {
+  background-color: #eee;
+  /* Firefox */
+  -moz-transition: all 2s ease-in;
+  /* WebKit */
+  -webkit-transition: all 2s ease-in;
+  /* Opera */
+  -o-transition: all 2s ease-in;
+  /* Standard */
+  transition: all 2s ease-in;
+}
+
+/*.bg-img
+  background: repeating-linear-gradient(
+  45deg,
+  rgba(0, 0, 0, 0),
+  rgba(0, 0, 0, 0) 2px,
+  rgba(0, 0, 0, 0.4) 2px,
+  rgba(0, 0, 0, 0.4) 4px
+  ),
+  url('../assets/images/about/meee.jpg') center center no-repeat;
+  width: 100%;
+  height: 100%;
+
+  background-size: cover;*/
+
+.bg-img {
+  background: linear-gradient(to bottom right, rgba(0, 47, 150, 0.2) 0%, rgba(200, 47, 75, 0.8) 60%, rgba(220, 66, 37, 0.65) 100%), url("img/3.jpg") center center no-repeat;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  /*background url(https://lh3.googleusercontent.com/-pvhkbKpgGLI/U0978bPDhiI/AAAAAAAACC0/SKm7JUrm71E/w1032-h387-no/DSC_4314.jpg) no-repeat center bottom #fff;*/
+}
+
+#aboutMeIntro .caption {
+  opacity: 0.6;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.4);
+  font-size: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  transition: opacity 1s;
+  padding: 20px;
+}
+
+#aboutMeIntro:hover > .caption {
+  opacity: 1;
+}
+
+#aboutMeIntro h2 {
+  font-size: 300%;
+  color: #00b3ee;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+  opacity: 0.8;
+  text-align: center;
+  margin: 4.5em 0px 2em;
+}
+
+#aboutMeIntro h2 span {
+  /* Firefox */
+  -moz-transition: all 1.5s ease-out;
+  /* WebKit */
+  -webkit-transition: all 1.5s ease-out;
+  /* Opera */
+  -o-transition: all 1.5s ease-out;
+  /* Standard */
+  transition: all 1.5s ease-out;
+}

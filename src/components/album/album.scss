@@ -1,0 +1,19 @@
+ol.thumb-grid {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+ol.thumb-grid li {
+  width: calc(33% - 16px);
+  margin-left: 16px;
+  margin-top: 16px;
+}
+
+/*ol.thumb-grid li:nth-child(5n) {
+    margin-right: 0;
+}*/
+ol.thumb-grid li a img {
+  width: 100%;
+}

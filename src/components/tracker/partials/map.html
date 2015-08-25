@@ -1,0 +1,28 @@
+<ion-view title="Map">
+
+  <ion-nav-buttons side="left">
+    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+  </ion-nav-buttons>
+
+  <ion-nav-buttons side="right">
+    <button ng-click="vm.locate();" class="button button-icon icon ion-pinpoint"></button>
+  </ion-nav-buttons>
+
+  <ion-content has-header="true" padding="true" data-tap-disabled="true">
+    <leaflet height="{{vm.map.height}}" id="{{vm.map.id}}" defaults="vm.map.defaults" center="vm.map.center"
+             markers="vm.map.markers" paths="vm.map.paths" ng-if="vm.map"></leaflet>
+  </ion-content>
+
+  <div class="fixed-bottom">
+    <button ng-show="vm.control.pathSave.active" ng-click="vm.saveCurrentPath()"
+            class="button button-navigation button-balanced icon-left">Save
+    </button>
+    <button ng-show="vm.control.navigation.active" ng-click="vm.toggleWatchPosition()"
+            class="button button-navigation icon-left"
+            ng-class="vm.control.navigation.activated ? 'ion-ios-navigate active button-energized' : 'ion-ios-navigate-outline button-positive'">
+      {{vm.control.navigation.activated ? 'Stop' : 'Start'}}
+    </button>
+
+  </div>
+
+</ion-view>

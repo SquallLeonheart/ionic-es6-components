@@ -1,0 +1,66 @@
+<ion-side-menus>
+  <ion-pane ion-side-menu-content edge-drag-threshold="25">
+    <ion-nav-bar class="bar-energized">
+      <ion-nav-back-button class="button-clear"><i class="icon ion-ios7-arrow-left"></i></ion-nav-back-button>
+    </ion-nav-bar>
+    <ion-nav-view name="menuContent" animation="slide-left-right"></ion-nav-view>
+  </ion-pane>
+
+  <ion-side-menu side="left" expose-aside-when="large">
+    <header class="bar bar-header bar-dark">
+      <h1 class="title">imagineFeelCreate</h1>
+    </header>
+    <ion-content class="has-header">
+      <ion-list>
+        <ion-item href="#" item-type="item-icon-left" class="glow-animation" nav-clear menu-close ui-sref="app.tracker"
+                  ui-sref-active="active">
+          <i class="icon ion-ios-navigate"></i>
+          {{ "MENU_TRACKER" | translate }}
+        </ion-item>
+        <!--<ion-item item-type="item-icon-left" class="glow-animation" nav-clear menu-close ui-sref="app.browser" ui-sref-active="active">
+            <i class="icon ion-images"></i>
+            {{ "MENU_BROWSER" | translate }}
+        </ion-item>-->
+        <ion-item href="#" item-type="item-icon-left" class="glow-animation" nav-clear menu-close ui-sref="app.album"
+                  ui-sref-active="active">
+          <i class="icon ion-images"></i>
+          {{ "MENU_ALBUM" | translate }}
+        </ion-item>
+        <!--<ion-item item-type="item-icon-left" class="glow-animation" nav-clear menu-close ui-sref="app.music" ui-sref-active="active">
+            <i class="icon ion-ios-musical-notes"></i>
+            {{ "MENU_MUSIC" | translate }}
+        </ion-item>-->
+        <ion-item href="#" item-type="item-icon-left" class="glow-animation" nav-clear menu-close ui-sref="app.about"
+                  ui-sref-active="active">
+          <i class="icon ion-code-working"></i>
+          {{ "MENU_ABOUT" | translate }}
+        </ion-item>
+        <!--<ion-item item-type="item-icon-left" nav-clear menu-close href="#/app/person/me/feed">
+            <i class="icon ion-radio-waves"></i>
+            {{ "MENU_FEED" | translate }}
+        </ion-item>
+        <ion-item item-type="item-icon-left" nav-clear menu-close href="#/app/share">
+            <i class="icon ion-share"></i>
+            {{ "MENU_SHARE" | translate }}
+        </ion-item>
+        <ion-item item-type="item-icon-left" nav-clear menu-close href="#/app/person/me/friends">
+            <i class="icon ion-ios7-people"></i>
+            {{ "MENU_FRIENDS" | translate }}
+        </ion-item>
+        <ion-item item-type="item-icon-left" nav-clear menu-close href="#/app/profile">
+            <i class="icon ion-person"></i>
+            {{ "MENU_PROFILE" | translate }}
+        </ion-item>
+        <ion-item item-type="item-icon-left" nav-clear menu-close ng-click="logout()">
+            <i class="icon ion-log-out"></i>
+            {{ "MENU_LOGOUT" | translate }}
+        </ion-item>
+        <ion-item item-type="item-icon-left" nav-clear menu-close ng-click="revokePermissions()">
+            <i class="icon ion-unlocked"></i>
+            {{ "MENU_REVOKE_PERMISSIONS" | translate }}
+        </ion-item>-->
+      </ion-list>
+    </ion-content>
+  </ion-side-menu>
+
+</ion-side-menus>
