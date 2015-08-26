@@ -10,8 +10,7 @@ export default () => new Promise((resolve, reject) => {
     if (err) {
       reject(err);
     } else {
-      resolve();
-      //fs.makeDir('build').then(resolve, reject);
+      fs.makeDir('build').then(resolve, reject);
     }
   });
 });
