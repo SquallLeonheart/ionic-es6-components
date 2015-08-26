@@ -41,7 +41,7 @@ const appModule = module.exports = angular
 
   })
 
-  .constant('apiEndpoint', 'http://localhost:3000');
+  .constant('apiEndpoint', 'https://track-api.herokuapp.com');
 
 
 bootstrap.ionicBootstrap(appModule, global);
