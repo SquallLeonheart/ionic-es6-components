@@ -1,4 +1,4 @@
 var low = require('lowdb');
-var db = low('db.json');
+var db = low('track-db.json');
 
 module.exports = db;

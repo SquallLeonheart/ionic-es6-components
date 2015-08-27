@@ -5,7 +5,7 @@ export default async () => {
 // check config files and copy default if they do not exist
   let input = [
     {src: 'tools/default-config/config.xml', dest: 'config.xml'},
-    {src: 'tools/default-config/client_secret.json', dest: 'src/config/gdrive/client_secret.json'}
+    //{src: 'tools/default-config/client_secret.json', dest: 'src/config/gdrive/client_secret.json'}
   ];
 
   input.forEach(function (config) {

@@ -8,9 +8,7 @@ var SCOPES = [
   'https://www.googleapis.com/auth/drive.appdata',
   'https://www.googleapis.com/auth/drive.apps.readonly'
 ];
-var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
-  process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'drive-api-quickstart.json';
+var TOKEN_PATH = path.join(__dirname, 'access_token.json');
 
 var auth01;
 function setAuth(auth) {

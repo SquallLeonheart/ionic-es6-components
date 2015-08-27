@@ -1,5 +1,10 @@
-var winston = require('winston');
+import winston from 'winston';
+import fs from 'fs';
 winston.emitErrs = true;
+
+try {
+  fs.mkdirSync('logs');
+} catch (err) {}
 
 var logger = new winston.Logger({
   transports: [
