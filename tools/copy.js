@@ -13,13 +13,15 @@ export default async () => {
     // Views
     {src: 'src/views', dest: 'build/views'},
 
-    {src: 'src/config/gdrive/client_secret.json', dest: 'build/client_secret.json'},
+    {src: 'src/config/gdrive/access_token.json', dest: 'build/access_token.json', ignoreErrors: true},
+    {src: 'src/config/gdrive/client_secret.json', dest: 'build/client_secret.json', ignoreErrors: true},
 
+    {src: 'tools/default-config/package.json', dest: 'build/package.json'},
     // Website and email templates
     //copy('src/templates', 'www/templates')
   ];
   await Promise.all(input.map(function (items) {
-    return copy(items.src,items.dest);
+    return copy(items.src,items.dest,items.ignoreErrors);
   }));
 
  /* if (global.WATCH) {

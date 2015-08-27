@@ -6,6 +6,7 @@ import merge from 'lodash/object/merge';
 const DEBUG = !process.argv.includes('release');
 const WATCH = global.WATCH === undefined ? false : global.WATCH;
 const VERBOSE = process.argv.includes('verbose');
+const SERVER = process.argv.includes('server');
 const STYLE_LOADER = 'style-loader/useable';
 const CSS_LOADER = DEBUG ? 'css-loader' : 'css-loader?minimize';
 const AUTOPREFIXER_BROWSERS = [
@@ -204,4 +205,6 @@ const serverConfig = merge({}, config, {
     }
 });
 
-export default [appConfig, serverConfig];
+let resultConfig = SERVER ? [serverConfig] : [appConfig, serverConfig];
+
+export default resultConfig;
