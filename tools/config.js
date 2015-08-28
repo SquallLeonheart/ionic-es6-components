@@ -20,7 +20,6 @@ const AUTOPREFIXER_BROWSERS = [
     'Opera >= 12',
     'Safari >= 6'
 ];
-const wwwRoot = path.resolve(__dirname, "../www/");
 const GLOBALS = {
     'process.env.NODE_ENV': DEBUG ? '"development"' : '"production"',
     '__DEV__': DEBUG
@@ -45,7 +44,7 @@ const config = {
         reasons: DEBUG,
         hash: VERBOSE,
         version: VERBOSE,
-        timings: VERBOSE,
+        timings: true,
         chunks: VERBOSE,
         chunkModules: VERBOSE,
         cached: VERBOSE,
@@ -89,43 +88,12 @@ const config = {
 };
 
 //
-// Configuration for the vendor bundle
-// -----------------------------------------------------------------------------
-const vendorConfig = merge({}, config, {
-  entry: {
-    vendor: [
-      './src/vendor.js'
-    ]
-  },
-  output: {
-    path: path.join(__dirname, '../build/vendor'),
-    filename: '[name].js'
-  },
-  plugins: [
-    ...config.plugins,
-    new DefinePlugin(merge({}, GLOBALS, {'__SERVER__': false})),
-    new ExtractTextPlugin("[name].css")
-  ],
-  module: {
-    loaders: [...config.module.loaders, {
-        test: /\.scss$/,
-        loader: ExtractTextPlugin.extract('style','css-loader!sass')
-      }, {
-      test: [/ionicons\.svg/, /ionicons\.eot/, /ionicons\.ttf/, /ionicons\.woff/],
-      loader: 'file?name=fonts/[name].[ext]'
-    }
-    ]
-  }
-});
-
-//
 // Configuration for the client-side bundle (app.js)
 // -----------------------------------------------------------------------------
 const appConfig = merge({}, config, {
     entry: {
         app: [
             ...(WATCH ? [
-                'webpack/hot/dev-server',
                 'webpack-hot-middleware/client'] : []),
             './src/app.js'
         ]
@@ -240,12 +208,5 @@ const serverConfig = merge({}, config, {
 });
 
 let resultConfig = SERVER ? [serverConfig] : [appConfig, serverConfig];
-/*try {
-  fs.statSync(path.join(__dirname, '../build/vendor/vendor.css'));
-} catch (err) {
-  console.log('adding vendorConfig');
-  resultConfig.unshift(vendorConfig);
-}*/
-
 
 export default resultConfig;

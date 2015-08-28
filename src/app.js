@@ -6,6 +6,8 @@ import menu from './components/menu/menu.module'
 import about from './components/about/about.module';
 import album from './components/album/album.module';
 import tracker from './components/tracker/tracker.module';
+import appConfig from './config/app.debug.config.js';
+
 
 const appModule = module.exports = angular
   .module('app', [
@@ -18,9 +20,11 @@ const appModule = module.exports = angular
     tracker
   ])
 
-  .config(function ($urlRouterProvider) {
+  .config(function ($urlRouterProvider, $locationProvider) {
     // fallback route
     //$urlRouterProvider.otherwise('/app/person/me/feed');
+
+    $locationProvider.html5Mode(true);
     $urlRouterProvider.otherwise('/tracker');
   })
 
@@ -41,7 +45,7 @@ const appModule = module.exports = angular
 
   })
 
-  .constant('apiEndpoint', 'https://track-api.herokuapp.com');
+  .constant('apiEndpoint', appConfig.apiEndpoint);
 
 
 bootstrap.ionicBootstrap(appModule, global);

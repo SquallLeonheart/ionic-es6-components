@@ -45,7 +45,7 @@ server.use(function (req, res, next) {
 
 server.use('/api/map', map(db));
 
-server.get('/', async (req, res, next) => {
+server.get('*', async (req, res, next) => {
   try {
     let statusCode = 200;
 
