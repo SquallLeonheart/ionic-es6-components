@@ -53,7 +53,6 @@ export default async () => {
     files: [
       'www/**/*.css',
       'www/**/*.html',
-      'www/**/*.js'
       //'build/content/**/*.*',
       //'build/templates/**/*.*'
     ]
