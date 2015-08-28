@@ -49,3 +49,9 @@ $ cordova run ios
 # or
 $ cordova run ios --device
 ```
+
+## Components
+### Tracker
+[Server Map API](./src/api/map.js) uses Google Drive API to store tracks in [GeoJSON](https://en.wikipedia.org/wiki/GeoJSON) format.
+Here is [guide to enable drive API.](https://developers.google.com/drive/web/quickstart/nodejs#step_1_enable_the_api_name)
+Place resulting client_secret.json into src/config/gdrive/ directory. Run server and follow instructions in console.

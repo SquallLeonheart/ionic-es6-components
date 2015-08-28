@@ -6,7 +6,7 @@ import fs from './lib/fs';
  */
 export default () => new Promise((resolve, reject) => {
   console.log('clean');
-  del(['.tmp', 'build/*', '!build/.git', '!build/node_modules', 'www/*', '!www/.gitignore'], {dot: true}, err => {
+  del(['.tmp', 'build/*', '!build/.git', '!build/vendor', '!build/node_modules', 'www/*', '!www/.gitignore'], {dot: true}, err => {
     if (err) {
       reject(err);
     } else {

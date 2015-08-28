@@ -53,19 +53,15 @@ export default class AlbumCtrl {
         // Share buttons
         //
         // Available variables for URL:
-        //              - url to current page
-        //             - title
-        //        - encoded image url
-        //    - raw image url
+        // {{url}}             - url to current page
+        // {{text}}            - title
+        // {{image_url}}       - encoded image url
+        // {{raw_image_url}}   - raw image url
         shareButtons: [
-          {id: 'facebook', label: 'Share on Facebook', url: 'https://www.facebook.com/sharer/sharer.php?u='},
-          {id: 'twitter', label: 'Tweet', url: 'https://twitter.com/intent/tweet?text=&url='},
-          {
-            id: 'pinterest',
-            label: 'Pin it',
-            url: 'http://www.pinterest.com/pin/create/button/?url=&media=&description='
-          },
-          {id: 'download', label: 'Download image', url: '', download: true}
+          {id:'facebook', label:'Share on Facebook', url:'https://www.facebook.com/sharer/sharer.php?u={{url}}'},
+          {id:'twitter', label:'Tweet', url:'https://twitter.com/intent/tweet?text={{text}}&url={{url}}'},
+          {id:'pinterest', label:'Pin it', url:'http://www.pinterest.com/pin/create/button/?url={{url}}&media={{image_url}}&description={{text}}'},
+          {id:'download', label:'Download image', url:'{{raw_image_url}}', download:true}
         ],
         getImageURLForShare: function (shareButtonData) {
           // `shareButtonData` - object from shareButtons array
@@ -73,6 +69,7 @@ export default class AlbumCtrl {
           // `pswp` is the gallery instance object,
           // you should define it by yourself
           //
+          //console.log('gallery:', gallery);
           return gallery.currItem.originalImage.src || '';
         },
 

@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import webpack, { DefinePlugin, BannerPlugin } from 'webpack';
+import ExtractTextPlugin from "extract-text-webpack-plugin";
 import merge from 'lodash/object/merge';
 
 const DEBUG = !process.argv.includes('release');
@@ -88,6 +89,36 @@ const config = {
 };
 
 //
+// Configuration for the vendor bundle
+// -----------------------------------------------------------------------------
+const vendorConfig = merge({}, config, {
+  entry: {
+    vendor: [
+      './src/vendor.js'
+    ]
+  },
+  output: {
+    path: path.join(__dirname, '../build/vendor'),
+    filename: '[name].js'
+  },
+  plugins: [
+    ...config.plugins,
+    new DefinePlugin(merge({}, GLOBALS, {'__SERVER__': false})),
+    new ExtractTextPlugin("[name].css")
+  ],
+  module: {
+    loaders: [...config.module.loaders, {
+        test: /\.scss$/,
+        loader: ExtractTextPlugin.extract('style','css-loader!sass')
+      }, {
+      test: [/ionicons\.svg/, /ionicons\.eot/, /ionicons\.ttf/, /ionicons\.woff/],
+      loader: 'file?name=fonts/[name].[ext]'
+    }
+    ]
+  }
+});
+
+//
 // Configuration for the client-side bundle (app.js)
 // -----------------------------------------------------------------------------
 const appConfig = merge({}, config, {
@@ -98,7 +129,6 @@ const appConfig = merge({}, config, {
                 'webpack-hot-middleware/client'] : []),
             './src/app.js'
         ]
-        //app: ['./src/app.js']
     },
     output: {
         path: path.join(__dirname, '../www'),
@@ -124,6 +154,11 @@ const appConfig = merge({}, config, {
         ] : [])
     ],
     module: {
+      noParse: [
+        new RegExp('ionic.bundle.js'),
+        new RegExp('leaflet-src.js'),
+        new RegExp('photoswipe.js')
+      ],
         loaders: [...config.module.loaders,
             {
                 test: [/ionicons\.svg/, /ionicons\.eot/, /ionicons\.ttf/, /ionicons\.woff/],
@@ -135,10 +170,9 @@ const appConfig = merge({}, config, {
 
             }, {
                 test: /\.css$/,
-                loader: `style!${CSS_LOADER}!postcss-loader`
+                loader: `style!${CSS_LOADER}`
             }, {
                 test: /\.scss$/,
-                //loader: 'style!css!sass'
                 loader: `style!${CSS_LOADER}!sass`
             }, {
                 test: /\.json$/,
@@ -155,7 +189,7 @@ const appConfig = merge({}, config, {
 // Configuration for the server-side bundle (server.js)
 // -----------------------------------------------------------------------------
 
-var nodeModules = {};
+let nodeModules = {};
 fs.readdirSync('node_modules')
     .filter(function(x) {
         return ['.bin'].indexOf(x) === -1;
@@ -206,5 +240,12 @@ const serverConfig = merge({}, config, {
 });
 
 let resultConfig = SERVER ? [serverConfig] : [appConfig, serverConfig];
+/*try {
+  fs.statSync(path.join(__dirname, '../build/vendor/vendor.css'));
+} catch (err) {
+  console.log('adding vendorConfig');
+  resultConfig.unshift(vendorConfig);
+}*/
+
 
 export default resultConfig;
