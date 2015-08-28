@@ -24,11 +24,11 @@ export default async () => {
     return copy(items.src,items.dest,items.ignoreErrors);
   }));
 
- /* if (global.WATCH) {
-    const watcher = await watch('src/content/!**!/!*.*');
+  if (global.WATCH) {
+    const watcher = await watch('src/public/**/*.*');
     watcher.on('changed', async (file) => {
-      file = file.substr(path.join(__dirname, '../src/content/').length);
-      await copy(`src/content/${file}`, `build/content/${file}`);
+      file = file.substr(path.join(__dirname, '../src/public/').length);
+      await copy(`src/public/${file}`, `build/content/${file}`);
     });
-  }*/
+  }
 };

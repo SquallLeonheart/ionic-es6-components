@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import webpack, { DefinePlugin, BannerPlugin } from 'webpack';
+import ExtractTextPlugin from "extract-text-webpack-plugin";
 import merge from 'lodash/object/merge';
 
 const DEBUG = !process.argv.includes('release');
@@ -19,7 +20,6 @@ const AUTOPREFIXER_BROWSERS = [
     'Opera >= 12',
     'Safari >= 6'
 ];
-const wwwRoot = path.resolve(__dirname, "../www/");
 const GLOBALS = {
     'process.env.NODE_ENV': DEBUG ? '"development"' : '"production"',
     '__DEV__': DEBUG
@@ -44,7 +44,7 @@ const config = {
         reasons: DEBUG,
         hash: VERBOSE,
         version: VERBOSE,
-        timings: VERBOSE,
+        timings: true,
         chunks: VERBOSE,
         chunkModules: VERBOSE,
         cached: VERBOSE,
@@ -94,11 +94,9 @@ const appConfig = merge({}, config, {
     entry: {
         app: [
             ...(WATCH ? [
-                'webpack/hot/dev-server',
                 'webpack-hot-middleware/client'] : []),
             './src/app.js'
         ]
-        //app: ['./src/app.js']
     },
     output: {
         path: path.join(__dirname, '../www'),
@@ -124,6 +122,11 @@ const appConfig = merge({}, config, {
         ] : [])
     ],
     module: {
+      noParse: [
+        new RegExp('ionic.bundle.js'),
+        new RegExp('leaflet-src.js'),
+        new RegExp('photoswipe.js')
+      ],
         loaders: [...config.module.loaders,
             {
                 test: [/ionicons\.svg/, /ionicons\.eot/, /ionicons\.ttf/, /ionicons\.woff/],
@@ -135,10 +138,9 @@ const appConfig = merge({}, config, {
 
             }, {
                 test: /\.css$/,
-                loader: `style!${CSS_LOADER}!postcss-loader`
+                loader: `style!${CSS_LOADER}`
             }, {
                 test: /\.scss$/,
-                //loader: 'style!css!sass'
                 loader: `style!${CSS_LOADER}!sass`
             }, {
                 test: /\.json$/,
@@ -155,7 +157,7 @@ const appConfig = merge({}, config, {
 // Configuration for the server-side bundle (server.js)
 // -----------------------------------------------------------------------------
 
-var nodeModules = {};
+let nodeModules = {};
 fs.readdirSync('node_modules')
     .filter(function(x) {
         return ['.bin'].indexOf(x) === -1;

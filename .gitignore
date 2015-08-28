@@ -1,13 +1,13 @@
 # Specifies intentionally untracked files to ignore when using Git
 # http://git-scm.com/docs/gitignore
 
-/src/components/facebook
-/src/public/mocks
-/src/components/audio
+src/components/facebook
+src/public/mocks
+src/components/audio
 node_modules/
 platforms/
 plugins/
-config.xml
+/config.xml
 
 
 ## Additional for IntelliJ

@@ -25,7 +25,13 @@ export default async () => {
         webpackDevMiddleware(bundler, {
           // IMPORTANT: dev middleware can't access config, so we should
           // provide publicPath by ourselves
-          publicPath: config.output.publicPath,
+          //publicPath: config.output.publicPath,
+          publicPath: 'http://localhost:5000/',
+
+          watchOptions: {
+            aggregateTimeout: 300,
+            poll: true
+          },
 
           // pretty colored output
           stats: config.stats,
@@ -45,8 +51,8 @@ export default async () => {
     // no need to watch '*.js' here, webpack will take care of it for us,
     // including full page reloads if HMR won't work
     files: [
-      //'build/public/**/*.css',
-      //'build/public/**/*.html',
+      'www/**/*.css',
+      'www/**/*.html',
       //'build/content/**/*.*',
       //'build/templates/**/*.*'
     ]

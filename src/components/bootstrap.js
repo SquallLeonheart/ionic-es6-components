@@ -11,7 +11,8 @@ import 'ionic-sdk/release/js/ionic.bundle';
 import templates from './templates';
 
 // Style entry point
-import './bootstrap.scss';
+//import '../../build/vendor/vendor.css';
+import './vendor.scss';
 
 var libsModule = module.exports =
   angular.module('common.libs', [
