@@ -8,14 +8,14 @@
 > [Babel](http://babeljs.io/), [BrowserSync](http://www.browsersync.io/)
 > and [Webpack](http://webpack.github.io/).
 
-Demo: http://ionic-es6-components.us.to/
+Demo: http://ionic-es6-components.wayfusion.com/
 
 ## Quickstart
 
 Clone the repository and install dependencies
 
 ```shell
-$ git clone https://github.com/SquallLeonheart/ionic-es6-components.git MyApp
+$ git clone https://github.com/sergkhl/ionic-es6-components.git MyApp
 $ cd MyApp
 $ npm install
 ```
