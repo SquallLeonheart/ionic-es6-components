@@ -24,7 +24,7 @@ const appModule = module.exports = angular
     // fallback route
     //$urlRouterProvider.otherwise('/app/person/me/feed');
 
-    $locationProvider.html5Mode(true);
+    //$locationProvider.html5Mode(true);
     $urlRouterProvider.otherwise('/tracker');
   })
 
