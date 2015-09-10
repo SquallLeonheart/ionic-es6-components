@@ -10,6 +10,10 @@
 
 Demo: http://ionic-es6-components.wayfusion.com/
 
+You can quickly bootstrap your Cordova/Ionic/Angular development by using the application 
+as a boilerplate example. The application communicates with Google 
+API via an Node.js server I deployed to Heroku.
+
 ## Quickstart
 
 Clone the repository and install dependencies

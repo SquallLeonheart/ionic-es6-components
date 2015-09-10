@@ -1,11 +1,61 @@
+'use strict';
+
 import _ from 'lodash';
+
+import MapStore from '../../../stores/MapStrore';
+import MapActions from '../../../actions/MapActions';
+import MapData from '../../../utils/MapData';
+const mapSvc = {
+  getTrack: function (data) {
+    if (data.bounds) {
+      return MapData.get('/api/map/track?bounds=' + data.bounds);
+    }
+  },
+
+  saveTrack: function (data) {
+    return MapData.post('/api/map/track', data);
+  }
+};
+
 export default class TrackerCtrl {
   /*@ngInject*/
-  constructor(leafletData, $window, $ionicPopup, mapSvc, $log, $scope) {
-    let vm = this;
-    vm.control = {
+  constructor($ionicPopup, $scope) {
+    this.$scope = $scope;
+    this.$ionicPopup = $ionicPopup;
+
+    this.settings = {
+      map: {
+        id: 'MapFusion-container',
+        defaults: {
+          tileLayer: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+          maxZoom: 18,
+          minZoom: 3,
+          zoomControlPosition: 'topleft'
+        },
+        currentTrack: {
+          color: '#222299',
+          opacity: 0.5,
+          weight: 3,
+          latlngs: []
+        },
+        tracks: {},
+        view: {
+          center: [51.505, -0.09],
+          zoom: 8
+        },
+        markers: {},
+        events: {
+          map: {
+            enable: ['context'],
+            logic: 'emit'
+          }
+        }
+      }
+    };
+
+    this.control = {
       navigation: {
-        active: false,
+        active: true,
         activated: false
       },
       pathSave: {
@@ -17,278 +67,175 @@ export default class TrackerCtrl {
       currentPathName: ''
     };
 
+    this.initMap();
+  }
 
-    if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/)) {
-      document.addEventListener("deviceready", onDeviceReady, false);
-    } else {
-      onDeviceReady();
-    }
+  initMap() {
+    // Initialize Leaflet Map
+    L.Icon.Default.imagePath = 'img';
+    this.settings.map.element = document.getElementById(this.settings.map.id);
+    if (this.map != null) return;
+    this.map = window.L.map(this.settings.map.element, this.settings.map.defaults);
 
 
-    function routeInfo(pos1, pos2) {
-      if (pos1 === undefined || pos2 === undefined) return;
-      var latLng1, latLng2, distance, t;
-      t = (pos2.timestamp - pos1.timestamp) / 1000 / 60 / 60;
-      if (t === 0) return;
-      latLng1 = L.latLng(pos1.coords.latitude, pos1.coords.longitude);
-      latLng2 = L.latLng(pos2.coords.latitude, pos2.coords.longitude);
-      distance = latLng1.distanceTo(latLng2) / 1000;
-      $log.debug('distance, time:', distance + ', ' + t);
-      $log.debug('speed:', distance / t);
-    }
+    // Initialize this.settings.map config
+    L.tileLayer(this.settings.map.defaults.tileLayer).addTo(this.map);
+    MapActions.updateViewCenter(this.settings.map.view);
+    this.markers = {
+      currentPosition: L.marker(this.settings.map.view.center).addTo(this.map)
+    };
+    this.currentTrack = window.L.polyline(this.settings.map.currentTrack.latlngs, this.settings.map.currentTrack).addTo(this.map);
 
-    function setCenter(position) {
-      vm.map.center.lat = position.coords.latitude;
-      vm.map.center.lng = position.coords.longitude;
-      //vm.map.center.zoom = 15;
 
-      var date = new Date(position.timestamp);
-      vm.map.markers.now = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        message: date.toLocaleTimeString(),
-        focus: true,
-        draggable: false
-      };
-    }
+    // Set event listeners
+    this.state = MapStore.getState();
+    MapStore.listen(this._onMapChange.bind(this));
+    this._onMapChange(this.state);
 
-    vm.showSavePopup = function () {
-      var savePopup = $ionicPopup.confirm({
-        template: '<input type="text" ng-model="data.currentPathName">',
-        title: 'Enter name for your route',
-        subTitle: 'Route will be added to your favorites',
-        scope: $scope,
-        buttons: [
-          {text: 'Cancel'},
-          {
-            text: '<b>Save</b>',
-            type: 'button-positive',
-            onTap: function (e) {
-              if (!$scope.data.currentPathName) {
-                //don't allow the user to close unless he enters name
-                e.preventDefault();
-              } else {
-                return $scope.data.currentPathName;
-              }
-            }
-          }
-        ]
-      });
-      savePopup.then(function (title) {
-        if (title) {
-          $log.debug('You are sure', title);
-          leafletData.getPaths().then(function (paths) {
-            var currentPath = paths.current;
-            if (currentPath === undefined) return;
-            var bounds = currentPath.getBounds();
-            var data = {
-              title: title,
-              bounds: bounds.toBBoxString().split(','),
-              geoJSON: currentPath.toGeoJSON()
-            };
-            mapSvc.saveTrack(data).then(function (res) {
-              $log.debug('successfully saved', res);
+
+    /*// Listen for orientation changes
+     this.settings.map.element.style.height = getMapHeight();
+     window.addEventListener("orientationchange", () => {
+     this.settings.map.element.style.height = getMapHeight();
+     //console.log('window.orientation:', window.orientation);
+     }, false);*/
+
+    this.map.on('moveend', () => {
+      let bounds = this.map.getBounds().toBBoxString();
+      mapSvc.getTrack({bounds: bounds}).then((res) => {
+        var tracks = res.data;
+        if (tracks instanceof Array) {
+          for (var key in this.settings.map.tracks) {
+            var found = _.findIndex(tracks, (track) => {
+              return track.id === key;
             });
-          });
-
-
-        } else {
-          $log.debug('You are not sure');
-        }
-      });
-    };
-
-    vm.saveCurrentPath = function () {
-      vm.showSavePopup();
-    };
-
-    var prevPosition;
-    vm.toggleWatchPosition = function () {
-      if (vm.watchID) {
-        navigator.geolocation.clearWatch(vm.watchID);
-        vm.watchID = undefined;
-        vm.control.navigation.activated = false;
-        if (vm.map.paths.current.latlngs.length > 2) {
-          vm.control.pathSave.active = true;
-        }
-      } else {
-        // Get the most accurate position updates available on the
-        // device.
-        var options = {enableHighAccuracy: true};
-        vm.watchID = navigator.geolocation.watchPosition(function (position) {
-            if (prevPosition && position.coords.longitude === prevPosition.coords.longitude && position.coords.latitude === prevPosition.coords.latitude) {
-              return;
+            if (found === -1) {
+              console.log('removeLayer this.settings.map.tracks ' + key);
+              this.map.removeLayer(this.settings.map.tracks[key]);
+              delete this.settings.map.tracks[key];
             }
-            setCenter(position);
-            vm.map.paths.current.latlngs.push([position.coords.latitude, position.coords.longitude]);
-
-            if (prevPosition) {
-              routeInfo(prevPosition, position);
-            }
-            prevPosition = position;
-            $log.debug('watchPosition', position);
-          }, function (err) {
-            $log.debug('err:', err);
-            alert(err);
-          },
-          options);
-
-        vm.control.navigation.activated = true;
-      }
-
-
-      /*if(window.plugins && window.plugins.backgroundGeoLocation){
-       var bgGeo = window.plugins.backgroundGeoLocation;
-
-       var yourAjaxCallback = function(response) {
-
-       bgGeo.finish();
-       };
-       /!**
-       * This callback will be executed every time a geolocation is recorded in the background.
-       *!/
-       var callbackFn = function(location) {
-       $log.debug('location', position);
-       if(socket){
-       socket.emit('message', {
-       id:did,
-       lat:location.latitude,
-       lng:location.longitude
-       });
-       }
-       // Do your HTTP request here to POST location to your server.
-       //
-       //
-       //yourAjaxCallback.call(this);
-       };
-       var failureFn = function(error) {
-       $log.debug('BackgroundGeoLocation error');
-       };
-       // BackgroundGeoLocation is highly configurable.
-       bgGeo.configure(callbackFn, failureFn,{
-       /!*
-       url: 'http://only.for.android.com/update_location.json', // <-- Android ONLY:  your server url to send locations to
-       params: {
-       auth_token: 'user_secret_auth_token',    //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
-       foo: 'bar'                              //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
-       },
-       headers: {                                   // <-- Android ONLY:  Optional HTTP headers sent to your configured #url when persisting locations
-       "X-Foo": "BAR"
-       },*!/
-       desiredAccuracy: 10,
-       stationaryRadius: 20,
-       distanceFilter: 30,
-       notificationTitle: 'Background tracking', // <-- android only, customize the title of the notification
-       notificationText: 'ENABLED', // <-- android only, customize the text of the notification
-       activityType: 'AutomotiveNavigation',
-       debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
-       stopOnTerminate: true // <-- enable this to clear background location settings when the app terminates
-       });
-       // Turn ON the background-geolocation system.  The user will be tracked whenever they suspend the app.
-       bgGeo.start();
-       }else{
-       alert('Geo not found');
-       $log.debug('Background Geo not found');
-       }*/
-    };
-
-    function onDeviceReady() {
-      vm.control.navigation.active = true;
-    }
-
-    $scope.$on("$stateChangeSuccess", function () {
-
-      function getMapHeight() {
-        return $window.innerHeight - 50 + 'px';
-      }
-
-      if (vm.map !== undefined) return;
-
-      vm.map = {
-        id: 'mainMap',
-        height: getMapHeight(),
-        defaults: {
-          tileLayer: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-          maxZoom: 18,
-          minZoom: 3,
-          zoomControlPosition: 'topleft',
-          attributionControl: false
-        },
-        paths: {
-          current: {
-            color: '#222299',
-            opacity: 0.5,
-            weight: 3,
-            latlngs: []
           }
-        },
-        tracks: {},
-        center: {
-          lat: 51.505,
-          lng: -0.09,
-          zoom: 8
-        },
-        markers: {},
-        events: {
-          map: {
-            enable: ['context'],
-            logic: 'emit'
+
+          tracks.forEach((track) => {
+            if (this.settings.map.tracks[track.id] === undefined) {
+              var lay = L.geoJson(track.geoJSON).addTo(this.map);
+              console.log('addLayer ' + track.id);
+              this.settings.map.tracks[track.id] = track.geoJSON;
+            }
+          });
+        }
+        console.log('res:', res);
+      });
+    });
+  }
+
+  /**
+   * Save current track modal window
+   */
+  showSavePopup() {
+    let $scope = this.$scope;
+    let savePopup = this.$ionicPopup.confirm({
+      template: '<input type="text" ng-model="data.currentPathName">',
+      title: 'Enter name for your route',
+      subTitle: 'Route will be added to your favorites',
+      scope: $scope,
+      buttons: [
+        {text: 'Cancel'},
+        {
+          text: '<b>Save</b>',
+          type: 'button-positive',
+          onTap: function (e) {
+            if (!$scope.data.currentPathName) {
+              //don't allow the user to close unless he enters name
+              e.preventDefault();
+            } else {
+              return $scope.data.currentPathName;
+            }
           }
         }
-      };
-
-      // Listen for orientation changes
-      window.addEventListener("orientationchange", function () {
-        vm.map.height = getMapHeight();
-        //$log.debug('window.orientation:', window.orientation);
-      }, false);
-
-
-      leafletData.getMap('mainMap').then(function (map) {
-        map.on('moveend', function () {
-          var bounds = map.getBounds().toBBoxString();
-          mapSvc.getTrack({bounds: bounds}).then(function (res) {
-            var tracks = res.data;
-            if (tracks instanceof Array) {
-              for (var key in vm.map.tracks) {
-                var found = _.findIndex(tracks, function (track) {
-                  return track.id === key;
-                });
-                if (found === -1) {
-                  $log.debug('removeLayer vm.map.tracks ' + key);
-                  map.removeLayer(vm.map.tracks[key]);
-                  delete vm.map.tracks[key];
-                }
-              }
-
-              tracks.forEach(function (track) {
-                if (vm.map.tracks[track.id] === undefined) {
-                  var lay = L.geoJson(track.geoJSON).addTo(map);
-                  $log.debug('addLayer ' + track.id);
-                  vm.map.tracks[track.id] = track.geoJSON;
-                }
-              });
-            }
-            $log.debug('res:', res);
-          });
-        });
-      });
-
+      ]
     });
 
-
-    vm.locate = function () {
-      if (vm.watchID) {
-        setCenter(prevPosition);
+    savePopup.then((title) => {
+      if (title) {
+        console.log('You are sure', title);
+        let bounds = this.currentTrack.getBounds();
+        let data = {
+          title: title,
+          bounds: bounds.toBBoxString().split(','),
+          geoJSON: this.currentTrack.toGeoJSON()
+        };
+        mapSvc.saveTrack(data).then( (res) => {
+          console.log('successfully saved', res);
+        });
       } else {
-        var options = {enableHighAccuracy: true};
-        navigator.geolocation
-          .getCurrentPosition(setCenter, function (err) {
-            $log.debug("Location error!");
-            $log.debug(err);
-          },
-          options);
+        console.log('You are not sure');
       }
-    };
+    });
+  }
+
+;
+
+  toggleWatchPosition() {
+    if (this.watchID != null) {
+      navigator.geolocation.clearWatch(this.watchID);
+      this.watchID = undefined;
+      this.control.navigation.activated = false;
+      if (this.state.currentTrack.latlngs.length > 2) {
+        this.control.pathSave.active = true;
+      }
+    } else {
+      // Get the most accurate position updates available on the device.
+      var options = {enableHighAccuracy: true};
+      this.watchID = navigator.geolocation
+        .watchPosition(position => {
+          MapActions.updateCurrentTrack(position);
+          console.log('watchPosition', position);
+        }, err => {
+          console.log('err:', err);
+        }, options);
+
+      this.control.navigation.activated = true;
+    }
+  }
+
+;
+
+  locate() {
+    if (this.watchID) {
+      this._setCenter(this.state.lastPosition);
+    } else {
+      var options = {enableHighAccuracy: true};
+      navigator.geolocation
+        .getCurrentPosition(this._setCenter, function (err) {
+          console.log('err:', err);
+        },
+        options);
+    }
+  }
+
+
+  _setCenter(position) {
+    MapActions.updateViewCenter([position.coords.latitude, position.coords.longitude]);
+
+
+
+    /* var date = new Date(position.timestamp);
+     vm.settings.map.markers.now = {
+     lat: position.coords.latitude,
+     lng: position.coords.longitude,
+     message: date.toLocaleTimeString(),
+     focus: true,
+     draggable: false
+     };*/
+  }
+
+  _onMapChange(state) {
+    this.state = state;
+    let { view, lastPosition, currentTrack } = state;
+    this.map.setView(view.center, view.zoom);
+    this.markers.currentPosition.setLatLng(view.center);
+
+    this.currentTrack.setLatLngs(currentTrack.latlngs);
   }
 }

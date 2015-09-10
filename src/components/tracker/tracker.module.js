@@ -4,9 +4,8 @@ import mapSvc from './services/mapSvc';
 import template from './partials/map.html';
 import 'leaflet/dist/leaflet.css';
 import leaflet from 'leaflet';
-import 'angular-leaflet-directive';
 
-export default angular.module('tracker', ['leaflet-directive'])
+export default angular.module('tracker', [])
   .controller('TrackerCtrl', TrackerCtrl)
   .factory('mapSvc', mapSvc)
   .config(function ($stateProvider) {

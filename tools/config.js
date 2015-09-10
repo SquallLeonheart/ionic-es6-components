@@ -10,16 +10,6 @@ const VERBOSE = process.argv.includes('verbose');
 const SERVER = process.argv.includes('server');
 const STYLE_LOADER = 'style-loader/useable';
 const CSS_LOADER = DEBUG ? 'css-loader' : 'css-loader?minimize';
-const AUTOPREFIXER_BROWSERS = [
-  'Android 2.3',
-  'Android >= 4',
-  'Chrome >= 20',
-  'Firefox >= 24',
-  'Explorer >= 8',
-  'iOS >= 6',
-  'Opera >= 12',
-  'Safari >= 6'
-];
 const GLOBALS = {
   'process.env.NODE_ENV': DEBUG ? '"development"' : '"production"',
   '__DEV__': DEBUG
@@ -82,8 +72,7 @@ const config = {
 
   postcss: [
     require('postcss-nested')(),
-    require('cssnext')(),
-    require('autoprefixer-core')(AUTOPREFIXER_BROWSERS)
+    require('cssnext')()
   ]
 };
 
@@ -164,7 +153,7 @@ fs.readdirSync('node_modules')
     nodeModules[mod] = mod;
   });
 
-const serverConfig = merge({}, config, {
+/*const serverConfig = merge({}, config, {
   entry: './src/server.js',
   output: {
     path: './build',
@@ -173,7 +162,7 @@ const serverConfig = merge({}, config, {
   },
   target: 'node',
   externals: nodeModules,
-  /*externals: [
+  /!*externals: [
    function (context, request, cb) {
    var isExternal =
    request.match(/^[a-z][a-z\/\.\-0-9]*$/i) &&
@@ -181,7 +170,7 @@ const serverConfig = merge({}, config, {
    !context.match(/[\\/]google-auth-library/);
    cb(null, Boolean(isExternal));
    }
-   ],*/
+   ],*!/
   node: {
     console: false,
     global: false,
@@ -203,8 +192,6 @@ const serverConfig = merge({}, config, {
       loader: `${CSS_LOADER}!postcss-loader`
     }]
   }
-});
+});*/
 
-let resultConfig = SERVER ? [serverConfig] : [appConfig, serverConfig];
-
-export default resultConfig;
+export default [appConfig];
