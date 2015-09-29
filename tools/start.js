@@ -26,9 +26,9 @@ export default async () => {
         webpackDevMiddleware(bundler, {
           // IMPORTANT: dev middleware can't access config, so we should
           // provide publicPath by ourselves
-          publicPath: path.join(__dirname, '../www'),
+          //publicPath: path.join(__dirname, '../www'),
           //publicPath: config.output.publicPath,
-          //publicPath: 'http://localhost:5002/',
+          publicPath: 'http://localhost:3000/',
 
           watchOptions: {
             aggregateTimeout: 300,
