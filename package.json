@@ -7,6 +7,7 @@
     "url": "https://github.com/sergkhl/ionic-es6-components.git"
   },
   "dependencies": {
+    "Leaflet.Coordinates": "https://github.com/MrMufflon/Leaflet.Coordinates#master",
     "alt": "^0.17.3",
     "angular-translate": "~2.7.2",
     "angular-translate-loader-static-files": "~2.7.2",
@@ -15,11 +16,15 @@
     "ionic-sdk": "^1.1.0",
     "jquery": "^2.1.4",
     "leaflet": "^0.7.5",
+    "leaflet.markercluster": "^0.4.0",
     "lodash": "3.10.1",
+    "node-sass": "^3.3.3",
     "normalize.css": "3.0.3",
     "photoswipe": "^4.1.0",
     "pleasejs": "^0.4.2",
-    "source-map-support": "0.3.2"
+    "source-map-support": "0.3.2",
+    "superagent": "^1.4.0",
+    "swiper": "^3.1.2"
   },
   "devDependencies": {
     "autoprefixer-core": "^5.2.1",
@@ -54,7 +59,7 @@
     "url-loader": "^0.5.6",
     "webpack": "^1.12.0",
     "webpack-dev-middleware": "^1.2.0",
-    "webpack-hot-middleware": "^2.0.0"
+    "webpack-hot-middleware": "^2.0.2"
   },
   "scripts": {
     "install": "npm run init",

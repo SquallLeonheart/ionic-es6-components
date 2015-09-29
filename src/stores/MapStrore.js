@@ -6,7 +6,7 @@ export class MapStore {
   constructor() {
     this.view = {
       center:  [51.505, -0.09],
-      zoom: 13
+      zoom: 15
     };
 
     this.lastPosition = null;

@@ -4,33 +4,28 @@ import _ from 'lodash';
 
 import MapStore from '../../../stores/MapStrore';
 import MapActions from '../../../actions/MapActions';
-import MapData from '../../../utils/MapData';
-const mapSvc = {
-  getTrack: function (data) {
-    if (data.bounds) {
-      return MapData.get('/api/map/track?bounds=' + data.bounds);
-    }
-  },
+import {MapDataUtils} from '../../../utils/MapData';
+import MapSvc from '../services/mapSvc';
+import SlidesCtrl from '../../slides/SlidesCtrl';
 
-  saveTrack: function (data) {
-    return MapData.post('/api/map/track', data);
-  }
-};
+let md = new MapDataUtils();
 
 export default class TrackerCtrl {
   /*@ngInject*/
-  constructor($ionicPopup, $scope) {
+  constructor($ionicSlideBoxDelegate, $ionicPopup, $scope) {
     this.$scope = $scope;
     this.$ionicPopup = $ionicPopup;
+    this.$ionicSlideBoxDelegate = $ionicSlideBoxDelegate;
 
     this.settings = {
       map: {
         id: 'MapFusion-container',
         defaults: {
           tileLayer: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-          maxZoom: 18,
-          minZoom: 3,
-          zoomControlPosition: 'topleft'
+          maxZoom: 17,
+          minZoom: 12,
+          zoomControlPosition: 'topleft',
+          attributionControl: false
         },
         currentTrack: {
           color: '#222299',
@@ -41,7 +36,7 @@ export default class TrackerCtrl {
         tracks: {},
         view: {
           center: [51.505, -0.09],
-          zoom: 8
+          zoom: 15
         },
         markers: {},
         events: {
@@ -75,16 +70,67 @@ export default class TrackerCtrl {
     L.Icon.Default.imagePath = 'img';
     this.settings.map.element = document.getElementById(this.settings.map.id);
     if (this.map != null) return;
-    this.map = window.L.map(this.settings.map.element, this.settings.map.defaults);
+    this.map = new window.L.map(this.settings.map.element, this.settings.map.defaults);
 
 
     // Initialize this.settings.map config
     L.tileLayer(this.settings.map.defaults.tileLayer).addTo(this.map);
-    MapActions.updateViewCenter(this.settings.map.view);
+    MapSvc.getGeo().then( (geo) => {
+      if (geo) {
+        let bbox = geo.resourceSets[0].resources[0].bbox;
+        //let bbox = geo[0].boundingbox;
+        // 'southwest_lng,southwest_lat,northeast_lng,northeast_lat'
+        this.map.fitBounds([[bbox[0], bbox[1]],[bbox[2], bbox[3]]] );
+        //this.map.fitBounds([[bbox[0], bbox[2]],[bbox[1], bbox[3]]] );
+      }
+    });
+    //this.locate();
+    //MapActions.updateViewCenter(this.settings.map.view);
+
+
+    // Leaflet.Coordinates
+    //L.control.coordinates().addTo(this.map);
+    //add configured controls
+    L.control.coordinates({
+      position: "bottomleft",
+      decimals: 2,
+      decimalSeperator: ",",
+      labelTemplateLat: "Lat: {y}",
+      labelTemplateLng: "Lng: {x}"
+    }).addTo(this.map);
+    /*L.control.coordinates({
+      position: "topright",
+      useDMS: true,
+      labelTemplateLat: "N {y}",
+      labelTemplateLng: "E {x}",
+      useLatLngOrder: true
+    }).addTo(this.map);*/
+
+    // Markers
     this.markers = {
       currentPosition: L.marker(this.settings.map.view.center).addTo(this.map)
     };
+    // Tracks
     this.currentTrack = window.L.polyline(this.settings.map.currentTrack.latlngs, this.settings.map.currentTrack).addTo(this.map);
+    // Photos
+    this.photoLayer = L.photo.cluster({spiderfyDistanceMultiplier: 1.2})
+      .on('click', (evt) => {
+        console.log('click', evt);
+        this.showPhotoPopup(evt);
+        /*evt.layer.bindPopup(L.Util.template('<img src="{url}"/><p>{caption}</p>', evt.layer.photo), {
+         className: 'leaflet-popup-photo',
+         minWidth: 400
+         }).openPopup();*/
+      })
+      .on('clusterclick', (evt) => {
+        console.log('clusterclick', evt);
+        this.showPhotoPopup(evt);
+      })
+
+      /*.on('clusterclick', (evt) => {
+       evt.preventDefault();
+       evt.layer.spiderfy();
+       })*/;
 
 
     // Set event listeners
@@ -92,42 +138,104 @@ export default class TrackerCtrl {
     MapStore.listen(this._onMapChange.bind(this));
     this._onMapChange(this.state);
 
+    let firstZoom = true;
 
-    /*// Listen for orientation changes
-     this.settings.map.element.style.height = getMapHeight();
-     window.addEventListener("orientationchange", () => {
-     this.settings.map.element.style.height = getMapHeight();
-     //console.log('window.orientation:', window.orientation);
-     }, false);*/
-
-    this.map.on('moveend', () => {
-      let bounds = this.map.getBounds().toBBoxString();
-      mapSvc.getTrack({bounds: bounds}).then((res) => {
-        var tracks = res.data;
-        if (tracks instanceof Array) {
-          for (var key in this.settings.map.tracks) {
-            var found = _.findIndex(tracks, (track) => {
-              return track.id === key;
+    this.map.on('zoomend', (evt) => {
+      console.log('md.getMapRadius(this.map):', md.getMapRadius(this.map));
+      console.log('evt:', evt);
+      if (firstZoom) {
+        firstZoom = false;
+        let squares = md.fillSquare(this.map);
+          MapSvc.getPhotos(squares).then((res) => {
+            let photos = res.items.map(item => {
+              let date = (new Date(item.created_time * 1000)).toLocaleTimeString();
+              return {
+                lat: item.location.latitude,
+                lng: item.location.longitude,
+                url: item.images.standard_resolution.url,
+                caption: `<i>${date}</i>
+                <a href="${item.link}">${item.caption && item.caption.text}</a> `,
+                thumbnail: item.images.thumbnail.url,
+                video: item.videos && item.videos.standard_resolution.url,
+                likes: item.likes,
+                user: item.user,
+                id: item.id
+              }
             });
-            if (found === -1) {
-              console.log('removeLayer this.settings.map.tracks ' + key);
-              this.map.removeLayer(this.settings.map.tracks[key]);
-              delete this.settings.map.tracks[key];
-            }
-          }
-
-          tracks.forEach((track) => {
-            if (this.settings.map.tracks[track.id] === undefined) {
-              var lay = L.geoJson(track.geoJSON).addTo(this.map);
-              console.log('addLayer ' + track.id);
-              this.settings.map.tracks[track.id] = track.geoJSON;
+            //photos = _.filter(photos, (media) => { return media.video != null });
+            if (photos.length) {
+              //console.log('photos:', photos);
+              this.photoLayer.add(photos).addTo(this.map);
+              this.map.fitBounds(this.photoLayer.getBounds());
             }
           });
-        }
-        console.log('res:', res);
-      });
+      }
     });
+
+    this.SlidesCtrl = new SlidesCtrl();
+
+    /*setTimeout( function() {
+      let slides = ['<div class="swiper-slide" style="background-image:url(http://lorempixel.com/1200/1200/nature/5)"></div>',
+        '<div class="swiper-slide" style="background-image:url(http://lorempixel.com/1200/1200/nature/5)"></div>'];
+
+      let thumbnails =
+        ['<div class="swiper-slide" style="background-image:url(http://lorempixel.com/1200/1200/nature/5)"></div>',
+          '<div class="swiper-slide" style="background-image:url(http://lorempixel.com/1200/1200/nature/5)"></div>'];
+      this.SlidesCtrl.setSlides(slides,thumbnails);
+    }.bind(this), 5000);*/
+
+
+  } // ---- initMap END -----
+
+  showPhotoPopup(evt) {
+    let $scope = this.$scope;
+
+    let markers,
+      slides = [],
+      thumbnails = [];
+    evt.layer.photo ? markers = [evt.layer] : markers = evt.layer.getAllChildMarkers();
+    let clickedIndex = _.findIndex(markers, {_leaflet_id: evt.layer._leaflet_id});
+
+    $scope.slides = {};
+
+    // ES6 destructoring & template strings
+    markers.forEach(({photo: {url, thumbnail, caption, video, user, likes, id}}) => {
+      $scope.slides[id] = {
+        likes: likes
+      };
+      let mediaTpl = `
+      <img src="${url}"/>`;
+      if (video && (!!document.createElement('video').canPlayType('video/mp4; codecs=avc1.42E01E,mp4a.40.2'))) {
+        mediaTpl = `
+        <video autoplay controls poster="${url}"><source src="${video}" type="video/mp4"/></video>`;
+      }
+      let slideTpl = `
+      <a href="https://instagram.com/${user.username}"><img style="width: 40px; height: 40px;" src="${user.profile_picture}"/> ${user.username}</a>
+      <button class="button button-icon button-clear ion-ios-heart-outline"> slides['${id}'].likes.count</button>
+      ${mediaTpl}
+      <p>${caption}</p>
+      `;
+
+      slides.push(`
+      <div class="swiper-slide">
+        ${slideTpl}
+      </div>
+      `);
+
+      let thumbnailTpl = `<img src="${thumbnail}"/>`;
+      thumbnails.push(`
+      <div class="swiper-slide">
+        ${thumbnailTpl}
+      </div>
+      `);
+    });
+
+    this.SlidesCtrl.setSlides(slides,thumbnails);
+    document.querySelector('.swiper-main-container').style.display = 'block';
+    window.dispatchEvent(new Event('resize'));
+
   }
+
 
   /**
    * Save current track modal window
@@ -165,7 +273,7 @@ export default class TrackerCtrl {
           bounds: bounds.toBBoxString().split(','),
           geoJSON: this.currentTrack.toGeoJSON()
         };
-        mapSvc.saveTrack(data).then( (res) => {
+        MapSvc.saveTrack(data).then((res) => {
           console.log('successfully saved', res);
         });
       } else {
@@ -217,7 +325,6 @@ export default class TrackerCtrl {
 
   _setCenter(position) {
     MapActions.updateViewCenter([position.coords.latitude, position.coords.longitude]);
-
 
 
     /* var date = new Date(position.timestamp);

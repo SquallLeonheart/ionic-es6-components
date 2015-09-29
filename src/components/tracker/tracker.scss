@@ -1,3 +1,16 @@
+.no-header .popup-head {
+  display: none;
+}
+
+.slide-box-close {
+  float: right;
+}
+
+.popup-header {
+  display: inline-block;
+  width: 100%;
+}
+
 /* scroll that wraps #MapFusion-container*/
 ion-content > .scroll {
   height: 100%;

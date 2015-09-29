@@ -11,12 +11,12 @@ export default async () => {
     // Static files
     {src: 'src/public', dest: 'www'},
     // Views
-    {src: 'src/views', dest: 'build/views'},
+    //{src: 'src/views', dest: 'build/views'},
 
-    {src: 'src/config/gdrive/access_token.json', dest: 'build/access_token.json', ignoreErrors: true},
-    {src: 'src/config/gdrive/client_secret.json', dest: 'build/client_secret.json', ignoreErrors: true},
+    //{src: 'src/config/gdrive/access_token.json', dest: 'build/access_token.json', ignoreErrors: true},
+    //{src: 'src/config/gdrive/client_secret.json', dest: 'build/client_secret.json', ignoreErrors: true},
 
-    {src: 'tools/default-config/package.json', dest: 'build/package.json'},
+    //{src: 'tools/default-config/package.json', dest: 'build/package.json'},
     // Website and email templates
     //copy('src/templates', 'www/templates')
   ];

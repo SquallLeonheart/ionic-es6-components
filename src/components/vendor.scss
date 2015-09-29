@@ -15,5 +15,7 @@ $dark: #444 !default;
 // The path for our ionicons font files, relative to the built CSS in www/css
 $ionicons-font-path: "~ionic-sdk/release/fonts" !default;
 
+$popup-width: 95% !default;
+
 // Include all of Ionic
 @import "~ionic-sdk/scss/ionic";

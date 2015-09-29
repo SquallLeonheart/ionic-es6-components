@@ -1,17 +1,23 @@
-export default /*@ngInject*/ function ($http, $log, apiEndpoint) {
-  var svc = {};
+import {MapData} from '../../../utils/MapData';
 
-  svc.saveTrack = function (data) {
-    $log.debug(data);
-    return $http.post(apiEndpoint + '/api/map/track', data);
-  };
-
-  svc.getTrack = function (data) {
-    $log.debug(data);
+const mapSvc = {
+  getTrack: function (data) {
     if (data.bounds) {
-      return $http.get(apiEndpoint + '/api/map/track?bounds=' + data.bounds);
+      return MapData.get('/api/map/track?bounds=' + data.bounds);
     }
-  };
+  },
 
-  return svc;
-}
+  getGeo: function () {
+    return MapData.get('/api/geoip');
+  },
+
+  getPhotos: function (location) {
+    return MapData.post('/api/instagram/search', location);
+  },
+
+  saveTrack: function (data) {
+    return MapData.post('/api/map/track', data);
+  }
+};
+
+export default mapSvc;
